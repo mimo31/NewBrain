@@ -15,7 +15,7 @@ namespace NewBrain
 {
     public enum PasswordBackground
     {
-        Plain, Blocky, Ellipse
+        Plain, Blocky, Ellipse, EqualSign, Hourglass
     }
 
     public partial class MainForm : Form
@@ -213,6 +213,21 @@ namespace NewBrain
                         e.Graphics.FillRectangle(Brushes.LightSalmon, this.ClientRectangle);
                         e.Graphics.FillEllipse(Brushes.LightGreen, this.ClientRectangle);
                         break;
+                    case PasswordBackground.EqualSign:
+                        int signWidth = this.ClientSize.Width / 2;
+                        int signLineHeight = this.ClientSize.Height / 16;
+                        e.Graphics.FillRectangle(Brushes.LightSteelBlue, this.ClientRectangle);
+                        e.Graphics.FillRectangle(Brushes.LightSeaGreen, this.ClientSize.Width / 4, this.ClientSize.Height * 3 / 8 - signLineHeight / 2, signWidth, signLineHeight);
+                        e.Graphics.FillRectangle(Brushes.LightSeaGreen, this.ClientSize.Width / 4, this.ClientSize.Height * 5 / 8 - signLineHeight / 2, signWidth, signLineHeight);
+                        break;
+                    case PasswordBackground.Hourglass:
+                        e.Graphics.FillRectangle(Brushes.LemonChiffon, this.ClientRectangle);
+                        Point centerPoint = new Point(this.ClientSize.Width / 2, this.ClientSize.Height / 2);
+                        Point[] leftTriangle = new Point[] { new Point(0, 0), new Point(0, this.ClientSize.Height), centerPoint};
+                        Point[] rightTriangle = new Point[] { new Point(this.ClientSize.Width, 0), centerPoint, new Point(this.ClientSize.Width, this.ClientSize.Height) };
+                        e.Graphics.FillPolygon(Brushes.Bisque, leftTriangle);
+                        e.Graphics.FillPolygon(Brushes.Bisque, rightTriangle);
+                        break;
                 }
             }
             else
@@ -234,7 +249,6 @@ namespace NewBrain
                 case Keys.Enter:
                     this.Process(this.InputBox.Text);
                     this.InputBox.Text = "";
-                    e.Handled = true;
                     break;
                 case Keys.Up:
                     if (!this.IsBrowsingCommands)
@@ -376,18 +390,20 @@ namespace NewBrain
 
         private void Process(string text)
         {
-
-            this.IsBrowsingCommands = false;
-            this.CommandIndex = 0;
-            foreach (Function function in this.Functions)
+            if (!text.Equals(""))
             {
-                if (function.IsAsked(text))
+                this.IsBrowsingCommands = false;
+                this.CommandIndex = 0;
+                foreach (Function function in this.Functions)
                 {
-                    function.Ask(this, text);
-                    break;
+                    if (function.IsAsked(text))
+                    {
+                        function.Ask(this, text);
+                        break;
+                    }
                 }
+                this.LastCommands.Add(text);
             }
-            this.LastCommands.Add(text);
         }
     }
 }

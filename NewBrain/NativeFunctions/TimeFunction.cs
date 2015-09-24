@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NewBrain
+namespace NewBrain.NativeFunctions
 {
     public class TimeFunction : Function
     {

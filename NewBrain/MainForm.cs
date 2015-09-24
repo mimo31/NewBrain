@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Speech.Synthesis;
 using System.IO;
 using System.Security.Cryptography;
+using NewBrain.NativeFunctions;
 
 namespace NewBrain
 {
@@ -31,7 +32,7 @@ namespace NewBrain
         public string RootDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Brain";
         public PasswordBackground PasswordBackground { get; set; }
         public Random R { get; set; }
-        Action onSpeechCompleted;
+        public Action OnSpeechCompleted;
         private bool locked;
         public bool Locked
         {
@@ -168,16 +169,17 @@ namespace NewBrain
 
         private void SpeakingCompleted(object sender, EventArgs e)
         {
-            if (this.onSpeechCompleted != null)
+            if (this.OnSpeechCompleted != null)
             {
-                this.onSpeechCompleted();
-                this.onSpeechCompleted = null;
+                this.OnSpeechCompleted();
+                this.OnSpeechCompleted = null;
             }
         }
 
         private void InitializeNativeFunctions()
         {
             this.Functions.Add(new TimeFunction());
+            this.Functions.Add(new CloseFunction());
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
@@ -241,6 +243,7 @@ namespace NewBrain
                         {
                             this.IsBrowsingCommands = true;
                             this.InputBox.Text = this.LastCommands[this.LastCommands.Count - 1];
+                            this.InputBox.SelectionStart = this.InputBox.Text.Length;
                         }
                     }
                     else
@@ -250,6 +253,7 @@ namespace NewBrain
                             this.CommandIndex++;
                         }
                         this.InputBox.Text = this.LastCommands[this.LastCommands.Count - 1 - this.CommandIndex];
+                        this.InputBox.SelectionStart = this.InputBox.Text.Length;
                     }
                     break;
                 case Keys.Down:
@@ -259,10 +263,12 @@ namespace NewBrain
                         {
                             this.CommandIndex--;
                             this.InputBox.Text = this.LastCommands[this.LastCommands.Count - 1 - this.CommandIndex];
+                            this.InputBox.SelectionStart = this.InputBox.Text.Length;
                         }
                         else
                         {
                             this.InputBox.Text = this.LastCommands[this.LastCommands.Count - 1];
+                            this.InputBox.SelectionStart = this.InputBox.Text.Length;
                         }
                     }
                     break;
@@ -283,18 +289,22 @@ namespace NewBrain
                         if (hash.EqualsArray(realHash))
                         {
                             this.MainOutputLabel.Text = "Welcome.";
-                            this.onSpeechCompleted += () => this.Locked = false;
+                            this.OnSpeechCompleted += () =>
+                            {
+                                this.Locked = false;
+                                this.InputBox.Focus();
+                            };
                             this.WriteInPasswordAndSay("Welcome.");
                         }
                         else
                         {
-                            this.onSpeechCompleted += () => this.PasswordLabel.Text = "Enter the password please.";
+                            this.OnSpeechCompleted += () => this.PasswordLabel.Text = "Enter the password please.";
                             this.WriteInPasswordAndSay("Ouch, it looks like this is not the right password.");
                         }
                     }
                     else
                     {
-                        this.onSpeechCompleted += () => this.PasswordLabel.Text = "Enter the password please.";
+                        this.OnSpeechCompleted += () => this.PasswordLabel.Text = "Enter the password please.";
                         this.WriteInPasswordAndSay("Fill in the password please!");
                     }
                 }
@@ -309,7 +319,7 @@ namespace NewBrain
                             Directory.CreateDirectory(this.RootDirectory);
                             File.WriteAllBytes(this.RootDirectory + "\\Hash.dat", hash);
                             this.MainOutputLabel.Text = "Your password is now set.";
-                            this.onSpeechCompleted += () =>
+                            this.OnSpeechCompleted += () =>
                             {
                                 this.SettingPassword = false;
                                 this.ConfirmingPassword = false;
@@ -317,13 +327,14 @@ namespace NewBrain
                                 this.MainOutputLabel.Show();
                                 this.PasswordBox.Hide();
                                 this.PasswordLabel.Hide();
+                                this.InputBox.Focus();
                                 this.Refresh();
                             };
                             this.WriteInPasswordAndSay("Your password is now set.");
                         }
                         else
                         {
-                            this.onSpeechCompleted += () =>
+                            this.OnSpeechCompleted += () =>
                             {
                                 this.PasswordLabel.Text = "Enter the password you will use to unlock the system.";
                                 this.ConfirmingPassword = false;
@@ -342,7 +353,7 @@ namespace NewBrain
                         }
                         else
                         {
-                            this.onSpeechCompleted += () => this.PasswordLabel.Text = "Enter the password you will use to unlock the system.";
+                            this.OnSpeechCompleted += () => this.PasswordLabel.Text = "Enter the password you will use to unlock the system.";
                             this.WriteInPasswordAndSay("Fill in the password please!");
                         }
                     }

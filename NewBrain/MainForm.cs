@@ -59,6 +59,7 @@ namespace NewBrain
                     this.CountingToLabel.Hide();
                     this.PasswordBackground = (PasswordBackground)this.R.Next(Enum.GetNames(typeof(PasswordBackground)).Length);
                     this.WriteInPasswordAndSay("Enter the password please.");
+                    this.UpdatePasswordComponentSizes();
                 }
                 else
                 {
@@ -66,20 +67,21 @@ namespace NewBrain
                     this.PasswordLabel.Hide();
                     this.InputBox.Show();
                     this.MainOutputLabel.Show();
+                    this.UpdateMainComponentSizes();
                     if (this.Countdowns.Count != 0)
                     {
                         this.CountdownTimeLabel.Show();
                         this.CountingToLabel.Show();
+                        this.UpdateCountdownComponentsSizes();
                     }
                 }
-                this.UpdateComponentSizes();
                 this.Refresh();
             }
         }
         public bool SettingPassword { get; set; }
         public bool ConfirmingPassword { get; set; }
         private List<Countdown> Countdowns = new List<Countdown>();
-        private byte[] PasswordBytes; 
+        private byte[] PasswordBytes;
 
         public MainForm()
         {
@@ -98,32 +100,13 @@ namespace NewBrain
             this.DoubleBuffered = true;
 
             this.WindowState = FormWindowState.Maximized;
-            this.InputBox.Font = new Font("Arial", this.ClientSize.Height / 32, FontStyle.Regular, GraphicsUnit.Pixel);
-            this.InputBox.Size = new Size(this.ClientSize.Width * 31 / 32, 0);
-            this.InputBox.Location = new Point(this.ClientSize.Width / 64, this.ClientSize.Height / 32);
+
             this.InputBox.BorderStyle = BorderStyle.None;
             this.InputBox.KeyUp += this.InputKeyUp;
-
-            this.MainOutputLabel.Font = new Font("Sans Serif", this.ClientSize.Height / 64, FontStyle.Regular, GraphicsUnit.Pixel);
-            Rectangle mainOutputRect = new Rectangle(0, this.ClientSize.Height * 3 / 32, this.ClientSize.Width * 3 / 4, this.ClientSize.Height - this.ClientSize.Height * 3 / 32);
-            int widthBorder = mainOutputRect.Width / 64;
-            int heightBorder = mainOutputRect.Height / 64;
-            mainOutputRect.X += widthBorder;
-            mainOutputRect.Width -= 2 * widthBorder;
-            mainOutputRect.Y += heightBorder;
-            mainOutputRect.Height -= 2 * heightBorder;
-            this.MainOutputLabel.Location = mainOutputRect.Location;
-            this.MainOutputLabel.Size = mainOutputRect.Size;
-
-            this.PasswordBox.Font = new Font("Arial", this.ClientSize.Height / 32, FontStyle.Regular, GraphicsUnit.Pixel);
-            this.PasswordBox.Size = new Size(this.ClientSize.Width * 3 / 4, this.ClientSize.Height / 32);
-            this.PasswordBox.Location = new Point(this.ClientSize.Width / 8, this.ClientSize.Height * 3 / 4);
+            
             this.PasswordBox.UseSystemPasswordChar = true;
             this.PasswordBox.KeyUp += this.PasswordBoxKeyUp;
 
-            this.PasswordLabel.Font = new Font("Sans Serif", this.ClientSize.Height / 32, FontStyle.Regular, GraphicsUnit.Pixel);
-            this.PasswordLabel.Size = new Size(this.ClientSize.Width - this.ClientSize.Width / 8, this.ClientSize.Height / 2);
-            this.PasswordLabel.Location = new Point(this.ClientSize.Width / 16, this.ClientSize.Height / 4);
             this.PasswordLabel.BackColor = Color.Transparent;
             this.PasswordLabel.TextAlign = ContentAlignment.MiddleCenter;
 
@@ -168,36 +151,50 @@ namespace NewBrain
             this.Refresh();
         }
 
-        private void UpdateComponentSizes()
+        #region Resizing
+
+        private void UpdatePasswordComponentSizes()
         {
-            if (this.Locked || this.SettingPassword)
-            {
-                this.PasswordBox.Font = new Font("Arial", this.ClientSize.Height / 32, FontStyle.Regular, GraphicsUnit.Pixel);
-                this.PasswordBox.Size = new Size(this.ClientSize.Width * 3 / 4, this.ClientSize.Height / 32);
-                this.PasswordBox.Location = new Point(this.ClientSize.Width / 8, this.ClientSize.Height * 3 / 4);
+            this.PasswordBox.Font = new Font("Arial", this.ClientSize.Height / 32, FontStyle.Regular, GraphicsUnit.Pixel);
+            this.PasswordBox.Size = new Size(this.ClientSize.Width * 3 / 4, this.ClientSize.Height / 32);
+            this.PasswordBox.Location = new Point(this.ClientSize.Width / 8, this.ClientSize.Height * 3 / 4);
 
-                this.PasswordLabel.Font = new Font("Sans Serif", this.ClientSize.Height / 32, FontStyle.Regular, GraphicsUnit.Pixel);
-                this.PasswordLabel.Size = new Size(this.ClientSize.Width - this.ClientSize.Width / 8, this.ClientSize.Height / 2);
-                this.PasswordLabel.Location = new Point(this.ClientSize.Width / 16, this.ClientSize.Height / 4);
-            }
-            else
-            {
-                this.InputBox.Font = new Font("Arial", this.ClientSize.Height / 32, FontStyle.Regular, GraphicsUnit.Pixel);
-                this.InputBox.Size = new Size(this.ClientSize.Width * 31 / 32, 0);
-                this.InputBox.Location = new Point(this.ClientSize.Width / 64, this.ClientSize.Height / 32);
-
-                this.MainOutputLabel.Font = new Font("Sans Serif", this.ClientSize.Height / 64, FontStyle.Regular, GraphicsUnit.Pixel);
-                Rectangle mainOutputRect = new Rectangle(0, this.ClientSize.Height * 3 / 32, this.ClientSize.Width * 3 / 4, this.ClientSize.Height - this.ClientSize.Height * 3 / 32);
-                int widthBorder = mainOutputRect.Width / 64;
-                int heightBorder = mainOutputRect.Height / 64;
-                mainOutputRect.X += widthBorder;
-                mainOutputRect.Width -= 2 * widthBorder;
-                mainOutputRect.Y += heightBorder;
-                mainOutputRect.Height -= 2 * heightBorder;
-                this.MainOutputLabel.Location = mainOutputRect.Location;
-                this.MainOutputLabel.Size = mainOutputRect.Size;
-            }
+            this.PasswordLabel.Font = new Font("Sans Serif", this.ClientSize.Height / 32, FontStyle.Regular, GraphicsUnit.Pixel);
+            this.PasswordLabel.Size = new Size(this.ClientSize.Width - this.ClientSize.Width / 8, this.ClientSize.Height / 2);
+            this.PasswordLabel.Location = new Point(this.ClientSize.Width / 16, this.ClientSize.Height / 4);
         }
+
+        private void UpdateMainComponentSizes()
+        {
+            this.InputBox.Font = new Font("Arial", this.ClientSize.Height / 32, FontStyle.Regular, GraphicsUnit.Pixel);
+            this.InputBox.Size = new Size(this.ClientSize.Width * 31 / 32, 0);
+            this.InputBox.Location = new Point(this.ClientSize.Width / 64, this.ClientSize.Height / 32);
+
+            this.MainOutputLabel.Font = new Font("Sans Serif", this.ClientSize.Height / 64, FontStyle.Regular, GraphicsUnit.Pixel);
+            Rectangle mainOutputRect = new Rectangle(0, this.ClientSize.Height * 3 / 32, this.ClientSize.Width * 3 / 4, this.ClientSize.Height - this.ClientSize.Height * 3 / 32);
+            int widthBorder = mainOutputRect.Width / 64;
+            int heightBorder = mainOutputRect.Height / 64;
+            mainOutputRect.X += widthBorder;
+            mainOutputRect.Width -= 2 * widthBorder;
+            mainOutputRect.Y += heightBorder;
+            mainOutputRect.Height -= 2 * heightBorder;
+            this.MainOutputLabel.Location = mainOutputRect.Location;
+            this.MainOutputLabel.Size = mainOutputRect.Size;
+        }
+
+        private void UpdateCountdownComponentsSizes()
+        {
+            Rectangle countdownRect = new Rectangle(this.ClientSize.Width * 3 / 4, this.ClientSize.Height * 3 / 32, this.ClientSize.Width / 4, this.ClientSize.Height * 3 / 32);
+            this.CountdownTimeLabel.Size = countdownRect.Size;
+            this.CountdownTimeLabel.Location = countdownRect.Location;
+            this.CountdownTimeLabel.Font = new Font(FontFamily.GenericMonospace, countdownRect.Height * 3 / 4, FontStyle.Regular, GraphicsUnit.Pixel);
+
+            this.CountingToLabel.Size = new Size(countdownRect.Width, this.ClientSize.Height / 32);
+            this.CountingToLabel.Location = new Point(countdownRect.X, countdownRect.Y + countdownRect.Height);
+            this.CountingToLabel.Font = new Font("Sans Serif", this.CountingToLabel.Height / 2);
+        }
+
+        #endregion
 
         private void UpdateOnTick(object sender, EventArgs e)
         {
@@ -260,18 +257,6 @@ namespace NewBrain
             this.CountingToLabel.Text = "Until " + this.Countdowns[0].CountingTo;
         }
 
-        private void UpdateCountdownComponentsSizes()
-        {
-            Rectangle countdownRect = new Rectangle(this.ClientSize.Width * 3 / 4, this.ClientSize.Height * 3 / 32, this.ClientSize.Width / 4, this.ClientSize.Height * 3 / 32);
-            this.CountdownTimeLabel.Size = countdownRect.Size;
-            this.CountdownTimeLabel.Location = countdownRect.Location;
-            this.CountdownTimeLabel.Font = new Font(FontFamily.GenericMonospace, countdownRect.Height * 3 / 4, FontStyle.Regular, GraphicsUnit.Pixel);
-
-            this.CountingToLabel.Size = new Size(countdownRect.Width, this.ClientSize.Height / 32);
-            this.CountingToLabel.Location = new Point(countdownRect.X, countdownRect.Y + countdownRect.Height);
-            this.CountingToLabel.Font = new Font("Sans Serif", this.CountingToLabel.Height / 2);
-        }
-
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             if (this.Locked || this.SettingPassword)
@@ -313,7 +298,7 @@ namespace NewBrain
                     case PasswordBackground.Hourglass:
                         e.Graphics.FillRectangle(Brushes.LemonChiffon, this.ClientRectangle);
                         Point centerPoint = new Point(this.ClientSize.Width / 2, this.ClientSize.Height / 2);
-                        Point[] leftTriangle = new Point[] { new Point(0, 0), new Point(0, this.ClientSize.Height), centerPoint};
+                        Point[] leftTriangle = new Point[] { new Point(0, 0), new Point(0, this.ClientSize.Height), centerPoint };
                         Point[] rightTriangle = new Point[] { new Point(this.ClientSize.Width, 0), centerPoint, new Point(this.ClientSize.Width, this.ClientSize.Height) };
                         e.Graphics.FillPolygon(Brushes.Bisque, leftTriangle);
                         e.Graphics.FillPolygon(Brushes.Bisque, rightTriangle);
@@ -328,8 +313,18 @@ namespace NewBrain
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            this.UpdateComponentSizes();
-            this.UpdateCountdownComponentsSizes();
+            if (this.Locked || this.SettingPassword)
+            {
+                this.UpdatePasswordComponentSizes();
+            }
+            else
+            {
+                this.UpdateMainComponentSizes();
+                if (this.Countdowns.Count != 0)
+                {
+                    this.UpdateCountdownComponentsSizes();
+                }
+            }
             this.Refresh();
         }
 

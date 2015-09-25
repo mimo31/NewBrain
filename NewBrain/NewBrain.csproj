@@ -71,6 +71,9 @@
     </Compile>
     <Compile Include="Function.cs" />
     <Compile Include="NativeFunctions\CloseFunction.cs" />
+    <Compile Include="NativeFunctions\Countdown.cs" />
+    <Compile Include="NativeFunctions\CountdownFunction.cs" />
+    <Compile Include="NativeFunctions\LockFunction.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NativeFunctions\TimeFunction.cs" />

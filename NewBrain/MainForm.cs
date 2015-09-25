@@ -22,8 +22,14 @@ namespace NewBrain
     {
         public TextBox InputBox { get; set; }
         public Label MainOutputLabel { get; set; }
+
         public TextBox PasswordBox { get; set; }
         public Label PasswordLabel { get; set; }
+
+        public Label CountdownTimeLabel { get; set; }
+        public Label CountingToLabel { get; set; }
+        public Timer UpdateTimer { get; set; }
+
         public SpeechSynthesizer Speech { get; set; }
         public List<Function> Functions { get; set; } = new List<Function>();
         public List<string> LastCommands { get; set; } = new List<string>();
@@ -49,7 +55,10 @@ namespace NewBrain
                     this.PasswordLabel.Show();
                     this.InputBox.Hide();
                     this.MainOutputLabel.Hide();
+                    this.CountdownTimeLabel.Hide();
+                    this.CountingToLabel.Hide();
                     this.PasswordBackground = (PasswordBackground)this.R.Next(Enum.GetNames(typeof(PasswordBackground)).Length);
+                    this.WriteInPasswordAndSay("Enter the password please.");
                 }
                 else
                 {
@@ -57,6 +66,11 @@ namespace NewBrain
                     this.PasswordLabel.Hide();
                     this.InputBox.Show();
                     this.MainOutputLabel.Show();
+                    if (this.Countdowns.Count != 0)
+                    {
+                        this.CountdownTimeLabel.Show();
+                        this.CountingToLabel.Show();
+                    }
                 }
                 this.UpdateComponentSizes();
                 this.Refresh();
@@ -64,7 +78,8 @@ namespace NewBrain
         }
         public bool SettingPassword { get; set; }
         public bool ConfirmingPassword { get; set; }
-        private byte[] PasswordBytes;
+        private List<Countdown> Countdowns = new List<Countdown>();
+        private byte[] PasswordBytes; 
 
         public MainForm()
         {
@@ -115,14 +130,31 @@ namespace NewBrain
             this.Speech = new SpeechSynthesizer();
             this.Speech.SpeakCompleted += this.SpeakingCompleted;
 
+            this.UpdateTimer = new Timer();
+            this.UpdateTimer.Interval = 25;
+            this.UpdateTimer.Tick += this.UpdateOnTick;
+
+            this.CountdownTimeLabel = new Label();
+            this.CountdownTimeLabel.BackColor = Color.CadetBlue;
+            this.CountdownTimeLabel.ForeColor = Color.Yellow;
+            this.CountdownTimeLabel.Hide();
+
+            this.CountingToLabel = new Label();
+            this.CountingToLabel.TextAlign = ContentAlignment.TopLeft;
+            this.CountingToLabel.BackColor = Color.CadetBlue;
+            this.CountingToLabel.Hide();
+
             this.Controls.Add(this.InputBox);
             this.Controls.Add(this.MainOutputLabel);
             this.Controls.Add(this.PasswordBox);
             this.Controls.Add(this.PasswordLabel);
+            this.Controls.Add(this.CountdownTimeLabel);
+            this.Controls.Add(this.CountingToLabel);
+
+            this.Text = "Brain";
 
             if (Directory.Exists(RootDirectory))
             {
-                this.WriteInPasswordAndSay("Enter the password please.");
                 this.Locked = true;
             }
             else
@@ -167,6 +199,24 @@ namespace NewBrain
             }
         }
 
+        private void UpdateOnTick(object sender, EventArgs e)
+        {
+            if (this.Countdowns.Count != 0)
+            {
+                TimeSpan remainingTime = this.Countdowns[0].GetRemaingTime();
+                string time;
+                if (remainingTime.Days == 0)
+                {
+                    time = remainingTime.Hours + ":" + remainingTime.Minutes + ":" + remainingTime.Seconds + "." + ((int)Math.Floor((double)remainingTime.Milliseconds / 100)).ToString();
+                }
+                else
+                {
+                    time = ((int)Math.Floor(remainingTime.TotalDays)).ToString() + "days";
+                }
+                this.CountdownTimeLabel.Text = time;
+            }
+        }
+
         private void SpeakingCompleted(object sender, EventArgs e)
         {
             if (this.OnSpeechCompleted != null)
@@ -180,6 +230,46 @@ namespace NewBrain
         {
             this.Functions.Add(new TimeFunction());
             this.Functions.Add(new CloseFunction());
+            this.Functions.Add(new LockFunction());
+            this.Functions.Add(new CountdownFunction());
+        }
+
+        public void AddCountdown(Countdown countdown)
+        {
+            bool added = false;
+            for (int i = 0; i < this.Countdowns.Count; i++)
+            {
+                if (this.Countdowns[i].EndTime > countdown.EndTime)
+                {
+                    this.Countdowns.Insert(i, countdown);
+                    added = true;
+                    break;
+                }
+            }
+            if (!added)
+            {
+                this.Countdowns.Add(countdown);
+            }
+            if (this.Countdowns.Count == 1)
+            {
+                this.UpdateCountdownComponentsSizes();
+                this.CountdownTimeLabel.Show();
+                this.CountingToLabel.Show();
+                this.UpdateTimer.Start();
+            }
+            this.CountingToLabel.Text = "Until " + this.Countdowns[0].CountingTo;
+        }
+
+        private void UpdateCountdownComponentsSizes()
+        {
+            Rectangle countdownRect = new Rectangle(this.ClientSize.Width * 3 / 4, this.ClientSize.Height * 3 / 32, this.ClientSize.Width / 4, this.ClientSize.Height * 3 / 32);
+            this.CountdownTimeLabel.Size = countdownRect.Size;
+            this.CountdownTimeLabel.Location = countdownRect.Location;
+            this.CountdownTimeLabel.Font = new Font(FontFamily.GenericMonospace, countdownRect.Height * 3 / 4, FontStyle.Regular, GraphicsUnit.Pixel);
+
+            this.CountingToLabel.Size = new Size(countdownRect.Width, this.ClientSize.Height / 32);
+            this.CountingToLabel.Location = new Point(countdownRect.X, countdownRect.Y + countdownRect.Height);
+            this.CountingToLabel.Font = new Font("Sans Serif", this.CountingToLabel.Height / 2);
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
@@ -239,6 +329,7 @@ namespace NewBrain
         private void Form1_Resize(object sender, EventArgs e)
         {
             this.UpdateComponentSizes();
+            this.UpdateCountdownComponentsSizes();
             this.Refresh();
         }
 

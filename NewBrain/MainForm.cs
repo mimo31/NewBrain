@@ -118,12 +118,13 @@ namespace NewBrain
             this.UpdateTimer.Tick += this.UpdateOnTick;
 
             this.CountdownTimeLabel = new Label();
+            this.CountdownTimeLabel.TextAlign = ContentAlignment.MiddleCenter;
             this.CountdownTimeLabel.BackColor = Color.CadetBlue;
             this.CountdownTimeLabel.ForeColor = Color.Yellow;
             this.CountdownTimeLabel.Hide();
 
             this.CountingToLabel = new Label();
-            this.CountingToLabel.TextAlign = ContentAlignment.TopLeft;
+            this.CountingToLabel.TextAlign = ContentAlignment.MiddleCenter;
             this.CountingToLabel.BackColor = Color.CadetBlue;
             this.CountingToLabel.Hide();
 
@@ -187,7 +188,7 @@ namespace NewBrain
             Rectangle countdownRect = new Rectangle(this.ClientSize.Width * 3 / 4, this.ClientSize.Height * 3 / 32, this.ClientSize.Width / 4, this.ClientSize.Height * 3 / 32);
             this.CountdownTimeLabel.Size = countdownRect.Size;
             this.CountdownTimeLabel.Location = countdownRect.Location;
-            this.CountdownTimeLabel.Font = new Font(FontFamily.GenericMonospace, countdownRect.Height * 3 / 4, FontStyle.Regular, GraphicsUnit.Pixel);
+            this.CountdownTimeLabel.Font = new Font(FontFamily.GenericMonospace, countdownRect.Height / 2, FontStyle.Regular, GraphicsUnit.Pixel);
 
             this.CountingToLabel.Size = new Size(countdownRect.Width, this.ClientSize.Height / 32);
             this.CountingToLabel.Location = new Point(countdownRect.X, countdownRect.Y + countdownRect.Height);
@@ -204,7 +205,7 @@ namespace NewBrain
                 string time;
                 if (remainingTime.Days == 0)
                 {
-                    time = remainingTime.Hours + ":" + remainingTime.Minutes + ":" + remainingTime.Seconds + "." + ((int)Math.Floor((double)remainingTime.Milliseconds / 100)).ToString();
+                    time = remainingTime.Hours.ToString("D2") + ":" + remainingTime.Minutes.ToString("D2") + ":" + remainingTime.Seconds.ToString("D2") + "." + ((int)Math.Floor((double)remainingTime.Milliseconds / 100)).ToString();
                 }
                 else
                 {
